@@ -1,32 +1,29 @@
 pipeline {
     agent any
     stages {
-        stage('Checkout') {
-            steps {
-                // Checkout the code from the GitHub repository
-                git 'https://github.com/gokul4510/devops-build.git'
-            }
-        }
         stage('Build') {
             steps {
-                // Build the application (can be customized based on your project)
-                sh 'npm install'
-                sh 'npm run build'
+                sh './build.sh'
             }
         }
-        stage('Test') {
+        stage('Push') {
             steps {
-                // Run tests (if applicable)
-                sh 'npm test'
+                script {
+                    if (env.BRANCH_NAME == 'dev') {
+                        sh 'docker push gokul4510/react-app-dev:latest'
+                    } else if (env.BRANCH_NAME == 'master') {
+                        sh 'docker push gokul4510/react-app-prod:latest'
+                    }
+                }
             }
         }
         stage('Deploy') {
             steps {
-                // Deploy the application (can be customized based on your project)
-                sh 'docker build -t react-app:dev .'
-                sh 'docker run -d -p 80:80 react-app:dev'
+                sh './deploy.sh'
             }
         }
     }
 }
+
+
 
